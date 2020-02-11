@@ -37,7 +37,7 @@ namespace UnosOcena
     {
         public static CookieContainer Cookies = new CookieContainer();
         public static string auth_cookie = "kcs0gm33o884h5fpi6b4mjjq2c";
-        public static string ID_Zapisnika = "49792";
+        public static string ID_Zapisnika = "49790";
         public static string ID_Zaposlenog = "827";
         public static string bg_poena = "90";
         public static string ocena = "10";
@@ -66,7 +66,7 @@ namespace UnosOcena
             List<Student> studenti = new List<Student>();
 
             var htmlWeb = new HtmlWeb();
-            var query = $"http://nip.elfak.ni.ac.rs/default/predmet/unos-zapisnika/id/49792";
+            var query = $"http://nip.elfak.ni.ac.rs/default/predmet/unos-zapisnika/id/" + ID_Zapisnika;
             htmlWeb.UseCookies = true;
             htmlWeb.PreRequest += request =>
             {
@@ -104,32 +104,38 @@ namespace UnosOcena
                         join grade in grades on student.br_indeksa equals grade.br_indeksa
                         select new { ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grade.br_poena, ocena = grade.ocena };
 
-            foreach (var s in query)
+            try
             {
-                WebRequest request = WebRequest.Create("http://nip.elfak.ni.ac.rs/default/predmet/sacuvaj-ocenu");
-                request.Method = "POST";
-                request.ContentType = "application/x-www-form-urlencoded";
-                String PostBody = String.Format("poeni5=50&poeni6=60&poeni7=70&poeni8=80&poeni9=90&idraspored={0}&idzapos={1}&br_poena%5B%5D={2}&ocena%5B%5D={3}_{4}",
-                    ID_Zapisnika,
-                    ID_Zaposlenog,
-                    s.br_poena,
-                    s.ID,
-                    s.ocena
-                    );
-                byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(PostBody);
-                request.ContentLength = byteArray.Length;
-                request.TryAddCookie(new Cookie("PHPSESSID", auth_cookie) { Domain = "nip.elfak.ni.ac.rs" });
-                Stream dataStream = request.GetRequestStream();
-                dataStream.Write(byteArray, 0, byteArray.Length);
-                dataStream.Close();
-
-                WebResponse response = request.GetResponse();
-                if (((HttpWebResponse)response).StatusCode == HttpStatusCode.OK)
+                foreach (var s in query)
                 {
-                    StreamReader streamReader = new StreamReader(response.GetResponseStream(), true);
-                    Console.WriteLine(streamReader.ReadToEnd());
-                    Console.WriteLine("Uneo ocenu za studenta " + s.br_indeksa);
+                    WebRequest request = WebRequest.Create("http://nip.elfak.ni.ac.rs/default/predmet/sacuvaj-ocenu");
+                    request.Method = "POST";
+                    request.ContentType = "application/x-www-form-urlencoded";
+                    String PostBody = String.Format("poeni5=50&poeni6=60&poeni7=70&poeni8=80&poeni9=90&idraspored={0}&idzapos={1}&br_poena%5B%5D={2}&ocena%5B%5D={3}_{4}",
+                        ID_Zapisnika,
+                        ID_Zaposlenog,
+                        s.br_poena,
+                        s.ID,
+                        s.ocena
+                        );
+                    byte[] byteArray = System.Text.Encoding.UTF8.GetBytes(PostBody);
+                    request.ContentLength = byteArray.Length;
+                    request.TryAddCookie(new Cookie("PHPSESSID", auth_cookie) { Domain = "nip.elfak.ni.ac.rs" });
+                    Stream dataStream = request.GetRequestStream();
+                    dataStream.Write(byteArray, 0, byteArray.Length);
+                    dataStream.Close();
+
+                    WebResponse response = request.GetResponse();
+                    if (((HttpWebResponse)response).StatusCode == HttpStatusCode.OK)
+                    {
+                        StreamReader streamReader = new StreamReader(response.GetResponseStream(), true);
+                        Console.WriteLine(streamReader.ReadToEnd());
+                        Console.WriteLine("Uneo ocenu za studenta " + s.br_indeksa);
+                    }
                 }
+            } catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
     }
