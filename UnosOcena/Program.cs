@@ -9,6 +9,15 @@ using HtmlAgilityPack;
 
 namespace UnosOcena
 {
+    // ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grade.br_poena, ocena = grade.ocena
+    public class StudentGrade
+    {
+        public string ID { get; set; }
+        public string br_indeksa { get; set; }
+        public string br_poena { get; set; }
+        public string ocena { get; set; }
+    }
+
     public class Student
     {
         public string ID { get; set; }
@@ -23,7 +32,7 @@ namespace UnosOcena
 
         public static Grade FromCSV(string csvLine)
         {
-            string[] values = csvLine.Split(',');
+            string[] values = csvLine.Split(';');
             Grade grade = new Grade();
             grade.br_indeksa = values[0];
             grade.br_poena = values[1];
@@ -31,13 +40,13 @@ namespace UnosOcena
             return grade;
         }
     }
-    
+
 
     public static class Program
     {
         public static CookieContainer Cookies = new CookieContainer();
-        public static string auth_cookie = "kcs0gm33o884h5fpi6b4mjjq2c";
-        public static string ID_Zapisnika = "49790";
+        public static string auth_cookie = "1gcr8b4i1ps1ek1pb2q0mjakmk";
+        public static string ID_Zapisnika = "52746";
         public static string ID_Zaposlenog = "827";
         public static string bg_poena = "90";
         public static string ocena = "10";
@@ -77,7 +86,7 @@ namespace UnosOcena
             var doc = htmlWeb.Load(query);
             var response = doc.DocumentNode.SelectSingleNode("//table/tbody");
             var results = response.SelectNodes("tr");
-            foreach(var r in results)
+            foreach (var r in results)
             {
                 Student st = new Student();
                 st.ID = r.Attributes["id"].Value.Split('_')[1];
@@ -102,15 +111,18 @@ namespace UnosOcena
             var grades = LoadGrades();
             var query = from student in students
                         join grade in grades on student.br_indeksa equals grade.br_indeksa
-                        select new { ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grade.br_poena, ocena = grade.ocena };
+                        select new StudentGrade() { ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grade.br_poena, ocena = grade.ocena };
 
-            try
+
+            foreach (var s in query)
             {
-                foreach (var s in query)
+                try
                 {
                     WebRequest request = WebRequest.Create("http://nip.elfak.ni.ac.rs/default/predmet/sacuvaj-ocenu");
                     request.Method = "POST";
                     request.ContentType = "application/x-www-form-urlencoded";
+                    if (ValidatePointsAndGrade(s) != true)
+                        throw new Exception("Points and grade mismatch!");
                     String PostBody = String.Format("poeni5=50&poeni6=60&poeni7=70&poeni8=80&poeni9=90&idraspored={0}&idzapos={1}&br_poena%5B%5D={2}&ocena%5B%5D={3}_{4}",
                         ID_Zapisnika,
                         ID_Zaposlenog,
@@ -133,10 +145,27 @@ namespace UnosOcena
                         Console.WriteLine("Uneo ocenu za studenta " + s.br_indeksa);
                     }
                 }
-            } catch(Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error for " + s.br_indeksa + " error message: " + ex.Message);
+                }
             }
+
+        }
+
+        private static bool ValidatePointsAndGrade(StudentGrade s)
+        {
+            if (int.Parse(s.br_poena) >= 91)
+                if (s.ocena != "10") return false;
+            else if (int.Parse(s.br_poena) >= 81)
+                if (s.ocena != "9") return false;
+            else if (int.Parse(s.br_poena) >= 71)
+                if (s.ocena != "8") return false;
+            else if (int.Parse(s.br_poena) >= 61)
+                if (s.ocena != "7") return false;
+            else if (int.Parse(s.br_poena) >= 50)
+                if (s.ocena != "6") return false;
+            return true;
         }
     }
 }
