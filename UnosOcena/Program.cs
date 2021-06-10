@@ -32,7 +32,7 @@ namespace UnosOcena
 
         public static Grade FromCSV(string csvLine)
         {
-            string[] values = csvLine.Split(';');
+            string[] values = csvLine.Split(',');
             Grade grade = new Grade();
             grade.br_indeksa = values[0];
             grade.br_poena = values[1];
@@ -45,8 +45,8 @@ namespace UnosOcena
     public static class Program
     {
         public static CookieContainer Cookies = new CookieContainer();
-        public static string auth_cookie = "1gcr8b4i1ps1ek1pb2q0mjakmk";
-        public static string ID_Zapisnika = "69962";
+        public static string auth_cookie = "ieag1948kj4i6kel48fla61dlf";
+        public static string ID_Zapisnika = "68795";
         public static string ID_Zaposlenog = "827";
         public static string bg_poena = "90";
         public static string ocena = "10";
@@ -110,8 +110,9 @@ namespace UnosOcena
             var students = LoadStudents();
             var grades = LoadGrades();
             var query = from student in students
-                        join grade in grades on student.br_indeksa equals grade.br_indeksa
-                        select new StudentGrade() { ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grade.br_poena, ocena = grade.ocena };
+                        join grade in grades on student.br_indeksa equals grade.br_indeksa into ggrades
+                        from grad in ggrades.DefaultIfEmpty()
+                        select new StudentGrade() { ID = student.ID, br_indeksa = student.br_indeksa, br_poena = grad==null?"":grad.br_poena, ocena = grad == null ? "4" : grad.ocena };
 
 
             foreach (var s in query)
@@ -122,7 +123,7 @@ namespace UnosOcena
                     request.Method = "POST";
                     request.ContentType = "application/x-www-form-urlencoded";
                     if (ValidatePointsAndGrade(s) != true)
-                        throw new Exception("Points and grade mismatch!");
+                        throw new Exception(s.br_indeksa + " : Points and grade mismatch!");
                     String PostBody = String.Format("poeni5=50&poeni6=60&poeni7=70&poeni8=80&poeni9=90&idraspored={0}&idzapos={1}&br_poena%5B%5D={2}&ocena%5B%5D={3}_{4}",
                         ID_Zapisnika,
                         ID_Zaposlenog,
@@ -159,26 +160,36 @@ namespace UnosOcena
             {
                 if (s.ocena != "10")
                     return false;
+                else
+                    return true;
             }
             else if (int.Parse(s.br_poena) >= 81)
             {
-                if (s.ocena != "9")
+                if (s.ocena != "9") 
                     return false;
+                else
+                    return true;
             }
             else if (int.Parse(s.br_poena) >= 71)
             {
-                if (s.ocena != "8")
+                if (s.ocena != "8") 
                     return false;
+                else
+                    return true;
             }
             else if (int.Parse(s.br_poena) >= 61)
             {
-                if (s.ocena != "7")
+                if (s.ocena != "7") 
                     return false;
+                else
+                    return true;
             }
             else if (int.Parse(s.br_poena) >= 50)
             {
-                if (s.ocena != "6")
+                if (s.ocena != "6") 
                     return false;
+                else
+                    return true;
             }
             return true;
         }
