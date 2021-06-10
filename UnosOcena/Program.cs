@@ -46,7 +46,7 @@ namespace UnosOcena
     {
         public static CookieContainer Cookies = new CookieContainer();
         public static string auth_cookie = "1gcr8b4i1ps1ek1pb2q0mjakmk";
-        public static string ID_Zapisnika = "52746";
+        public static string ID_Zapisnika = "69962";
         public static string ID_Zaposlenog = "827";
         public static string bg_poena = "90";
         public static string ocena = "10";
@@ -156,15 +156,30 @@ namespace UnosOcena
         private static bool ValidatePointsAndGrade(StudentGrade s)
         {
             if (int.Parse(s.br_poena) >= 91)
-                if (s.ocena != "10") return false;
+            {
+                if (s.ocena != "10")
+                    return false;
+            }
             else if (int.Parse(s.br_poena) >= 81)
-                if (s.ocena != "9") return false;
+            {
+                if (s.ocena != "9")
+                    return false;
+            }
             else if (int.Parse(s.br_poena) >= 71)
-                if (s.ocena != "8") return false;
+            {
+                if (s.ocena != "8")
+                    return false;
+            }
             else if (int.Parse(s.br_poena) >= 61)
-                if (s.ocena != "7") return false;
+            {
+                if (s.ocena != "7")
+                    return false;
+            }
             else if (int.Parse(s.br_poena) >= 50)
-                if (s.ocena != "6") return false;
+            {
+                if (s.ocena != "6")
+                    return false;
+            }
             return true;
         }
     }
